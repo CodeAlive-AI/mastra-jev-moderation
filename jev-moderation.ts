@@ -231,8 +231,11 @@ export const withResilience = <TInput, TResult>(
       return result;
     } catch (error: unknown) {
       failures += 1;
-      if (failures === options.breakerThreshold) {
+      // `>=`: a failed trial call after the cooldown re-opens the breaker.
+      if (failures >= options.breakerThreshold) {
         openUntil = now() + options.breakerCooldownMs;
+      }
+      if (failures === options.breakerThreshold) {
         options.onBreakerOpen?.(error);
       }
       throw error;
