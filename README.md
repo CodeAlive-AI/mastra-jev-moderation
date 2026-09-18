@@ -63,6 +63,18 @@ tripwire too, with a different reason, so "any tripwire" is not a block.
 All of these are options; see `JevModerationOptions` in the file. `moderate`
 replaces the vendor call — use it in tests, or to route through a gateway.
 
+## Compared with Mastra's `ModerationProcessor`
+
+| | built-in | this |
+|---|---|---|
+| Classifier | any LLM, verdict parsed from structured output | Jev, typed answer, no text |
+| Messages checked | all by default, one call each, sequentially | the last one, one call |
+| Abort reason | model's own explanation, reaches the client | fixed code (`MESSAGE_BLOCKED`) |
+| Deadline / breaker | none | 5 s / 3 failures -> 60 s |
+| Unexpected error | aborts the turn ("Moderation failed: ...") | fails open |
+| Strategies | `block`, `warn`, `filter` | `block` only |
+| Output moderation | `processOutputStream`, `processOutputResult` | not supported |
+
 ## Writing the policy
 
 The default policy covers general moderation: hate, harassment, violence,

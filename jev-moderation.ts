@@ -283,11 +283,20 @@ const consoleLogger: Logger = {
   },
 };
 
-const lastMessageText = (messages: readonly MastraDBMessage[]): string =>
-  (messages.at(-1)?.content.parts ?? [])
-    .map((part) => (part.type === "text" ? part.text : ""))
-    .join("")
+/**
+ * Text parts joined with a space; when there are none, the legacy
+ * `content.content` string — the same fallback Mastra's own
+ * `ModerationProcessor` reads. Empty means "nothing to judge" and passes
+ * unchecked, so a message must not look empty when it is not.
+ */
+const lastMessageText = (messages: readonly MastraDBMessage[]): string => {
+  const content = messages.at(-1)?.content;
+  const fromParts = (content?.parts ?? [])
+    .flatMap((part) => (part.type === "text" ? [part.text] : []))
+    .join(" ")
     .trim();
+  return fromParts.length > 0 ? fromParts : (content?.content ?? "").trim();
+};
 
 export const createJevModerationProcessor = (
   options: JevModerationOptions
